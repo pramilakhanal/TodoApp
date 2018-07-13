@@ -1,7 +1,11 @@
+
+
+import axios from 'axios';
 import React, { Component } from 'react';
 import logo from './logo.svg';
 import './App.css';
 import Listitem from './Listitem';
+
 
 class App extends Component {
 
@@ -11,30 +15,38 @@ class App extends Component {
       newTodo: '',
       editing: false,
       editingIndex: null,
+      notification: null,
 
-      todos: [{
-        id: 1, name: 'Play Golf'
-      }, {
-
-        id: 2, name: 'Buy some clothes'
-      }, {
-
-        id: 3, name: 'Write Some Code'
-        }, {
-
-          id: 4, name: 'Watch Bahdcasts'
-
-
-        }]
+      todos: []
 
     };
+
+    this.apiUrl = 'https://5b46507b9f3653001445d256.mockapi.io';
 
     this.alert = this.alert.bind(this);
     this.addTodo = this.addTodo.bind(this);
     this.deleteTodo = this.deleteTodo.bind(this);
     this.updateTodo = this.updateTodo.bind(this);
-    this.generateTodoId = this.generateTodoId.bind(this);
+  
     this.handleChange = this.handleChange.bind(this);
+
+  }
+
+
+
+
+
+  async componentDidMount() {
+
+    const response = await axios.get(`${this.apiUrl}/todosapp`);
+    
+      console.log(response);
+
+    this.setState({
+
+       todos: response.data
+
+    });
 
   }
 
@@ -50,33 +62,25 @@ class App extends Component {
 
     }
 
-    generateTodoId() {
+    
 
-      const lastTodo = this.state.todos[this.state.todos.length - 1];
+     
 
-      if (lastTodo) {
+     async addTodo() {
 
-        return lastTodo.id  + 1;
-      }
+      
 
-      return 1;
+      const response = await axios.post(`${this.apiUrl}/todosapp`, {
 
-    }
+        name: this.state.newTodo
 
-    addTodo() {
+      });
 
-      const newTodo = {
-
-        name: this.state.newTodo,
-
-        id: this.generateTodoId()
-
-
-      };
+    console.log(response);
 
       const todos = this.state.todos;
 
-      todos.push(newTodo);
+      todos.push(response.date);
 
       this.setState({
 
@@ -85,6 +89,8 @@ class App extends Component {
         newTodo: ''
 
       });
+
+      this.alert('Todo added successfully.');
 
 
     }
@@ -112,17 +118,37 @@ class App extends Component {
 
       todo.name = this.state.newTodo;
 
+
+
+
       const todos = this.state.todos;
 
       todos[this.state.editingIndex] = todo;
 
       this.setState({ todos, editing: false, editingIndex: null, newTodo: '' });
 
-
+      this.alert('Todo updated successfully.');
 
     }
 
-    alert() {}
+    alert(notification) {
+
+      this.setState({
+
+        notification
+
+      });
+
+      setTimeout(() => {
+
+        this.setState({
+          notification: null
+
+        });
+
+      }, 2000);
+
+    }
 
 
     deleteTodo(index) {
@@ -132,6 +158,7 @@ class App extends Component {
      delete todos[index];
 
      this.setState({ todos });
+     this.alert('Todo deleted successfully.');
 
     }
 
@@ -146,6 +173,15 @@ class App extends Component {
           <h1 className="App-title">CRUD REACT</h1>
         </header>
         <div className="container">
+        {
+
+          this.state.notification &&
+
+        <div className="alert mt-3 alert-success">
+          <p className="text-center">{this.state.notification}</p>
+
+        </div>
+      }
 
         <input type="text" 
 
@@ -164,7 +200,11 @@ class App extends Component {
 
         onClick={this.state.editing ? this.updateTodo : this.addTodo}
 
-        className="btn-info mb-3 form-control">
+        className="btn-success mb-3 form-control"
+        
+        disabled={this.state.newTodo.length < 5}
+        >
+
         {this.state.editing ? 'Update todo' : 'Add todo'}
 
         </button>
